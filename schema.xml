@@ -5,7 +5,7 @@
 - https://www.phpmyadmin.net
 -
 - Host: localhost:8889
-- Erstellungszeit: 07. Apr 2021 um 15:54
+- Erstellungszeit: 12. Apr 2021 um 16:05
 - Server-Version: 5.7.32
 - PHP-Version: 7.4.12
 -->
@@ -94,7 +94,7 @@
                   `Kurzbezeichnung` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
                   `Beschreibung` text COLLATE utf8_unicode_ci NOT NULL,
                   PRIMARY KEY (`id_projekt`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Tabelle der Projekte';
+                ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Tabelle der Projekte';
             </pma:table>
             <pma:table name="projekt_nutzer_zuordnung">
                 CREATE TABLE `projekt_nutzer_zuordnung` (
@@ -106,19 +106,19 @@
                   KEY `projekt_zuordnung` (`id_projekte`) USING BTREE,
                   CONSTRAINT `projekt_nutzer_zuordnung_ibfk_1` FOREIGN KEY (`id_verfasser`) REFERENCES `verfasser` (`id_verfasser`),
                   CONSTRAINT `projekt_nutzer_zuordnung_ibfk_2` FOREIGN KEY (`id_projekte`) REFERENCES `projekte` (`id_projekt`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Tabelle der Zuordnung von Projekten und Nutzern ';
+                ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Tabelle der Zuordnung von Projekten und Nutzern ';
             </pma:table>
             <pma:table name="verfasser">
                 CREATE TABLE `verfasser` (
                   `id_verfasser` int(11) NOT NULL AUTO_INCREMENT,
-                  `Name` varchar(255) COLLATE utf16_unicode_ci NOT NULL COMMENT 'Nach-, Vorname',
+                  `Name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT 'Nach-, Vorname',
                   `Email` varchar(255) COLLATE utf16_unicode_ci NOT NULL,
-                  `Passwort` varchar(255) COLLATE utf16_unicode_ci NOT NULL,
+                  `Passwort` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
                   `Rolle` tinyint(4) NOT NULL COMMENT 'Rechtevergabe',
-                  `registered` datetime NOT NULL,
-                  `last_login` datetime NOT NULL,
+                  `registered` datetime DEFAULT NULL,
+                  `last_login` datetime DEFAULT NULL,
                   PRIMARY KEY (`id_verfasser`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf16 COLLATE=utf16_unicode_ci COMMENT='Tabelle der Nutzer';
+                ) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf16 COLLATE=utf16_unicode_ci COMMENT='Tabelle der Nutzer';
             </pma:table>
             <pma:table name="verursacher">
                 CREATE TABLE `verursacher` (
@@ -146,8 +146,45 @@
         <!-- Tabelle kommentare -->
         <!-- Tabelle mangelliste -->
         <!-- Tabelle projekte -->
+        <table name="projekte">
+            <column name="id_projekt">1</column>
+            <column name="Kurzbezeichnung">Testprojekt</column>
+            <column name="Beschreibung">Das Testprojekt dient zum ausprobieren. </column>
+        </table>
         <!-- Tabelle projekt_nutzer_zuordnung -->
+        <table name="projekt_nutzer_zuordnung">
+            <column name="id_proj_zuordnung">1</column>
+            <column name="id_verfasser">1</column>
+            <column name="id_projekte">1</column>
+        </table>
         <!-- Tabelle verfasser -->
+        <table name="verfasser">
+            <column name="id_verfasser">1</column>
+            <column name="Name">�W�e�i�t�z�,� �M�i�c�h�a�e�l</column>
+            <column name="Email">weitz@baustreit.de</column>
+            <column name="Passwort">�t�e�s�t</column>
+            <column name="Rolle">1</column>
+            <column name="registered">NULL</column>
+            <column name="last_login">NULL</column>
+        </table>
+        <table name="verfasser">
+            <column name="id_verfasser">33</column>
+            <column name="Name">tom</column>
+            <column name="Email">tom@email.de</column>
+            <column name="Passwort">$2y$10$GwU1oI4prb58K1atFiiSGexiMrwwRiS1N51BttYI5yWwvpa6a/eem</column>
+            <column name="Rolle">2</column>
+            <column name="registered">2021-04-12 11:40:04</column>
+            <column name="last_login">NULL</column>
+        </table>
+        <table name="verfasser">
+            <column name="id_verfasser">34</column>
+            <column name="Name">test</column>
+            <column name="Email">test@email.de</column>
+            <column name="Passwort">$2y$10$wMs.vCuxormAN6eKVzjTnuia0uGxMqmkOshiBbfSsoqB5RDSI2FPy</column>
+            <column name="Rolle">2</column>
+            <column name="registered">2021-04-12 11:49:28</column>
+            <column name="last_login">NULL</column>
+        </table>
         <!-- Tabelle verursacher -->
     </database>
 </pma_xml_export>
