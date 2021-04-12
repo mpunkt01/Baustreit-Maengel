@@ -17,7 +17,8 @@ if (isset($_POST['submit'])) {
   $hashPassword = password_hash($password,PASSWORD_DEFAULT);
   
 // Jetzt wird der Nutzer in die Datenbank übertragen
-  $sql = "INSERT INTO verfasser (Name, Passwort, Email) VALUES ('$name', '$hashPassword', '$email');";
+  $sql = "INSERT INTO verfasser (Name, Passwort, Email, Rolle, registered) 
+  VALUES ('$name', '$hashPassword', '$email', 2, Now());";
   $result = mysqli_query($connection, $sql);
 // Der User wird bei einem erfolgreichen Prozess auf 
 // die später noch erstellte Seite dashboard.php geschickt
