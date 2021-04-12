@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+- phpMyAdmin XML Dump
+- version 4.9.7
+- https://www.phpmyadmin.net
+-
+- Host: localhost:8889
+- Erstellungszeit: 07. Apr 2021 um 15:54
+- Server-Version: 5.7.32
+- PHP-Version: 7.4.12
+-->
+
+<pma_xml_export version="1.0" xmlns:pma="https://www.phpmyadmin.net/some_doc_url/">
+    <!--
+    - Structure schemas
+    -->
+    <pma:structure_schemas>
+        <pma:database name="DB_LackTracking" collation="utf8_general_ci" charset="utf8">
+            <pma:table name="anzeigen">
+                CREATE TABLE `anzeigen` (
+                  `id_anzeige` int(11) NOT NULL AUTO_INCREMENT,
+                  `Datum` date NOT NULL,
+                  `zu id_mangel` int(11) NOT NULL,
+                  `zu id_verursacher` int(11) NOT NULL,
+                  `Frist` date NOT NULL,
+                  `Nachfrist` date NOT NULL,
+                  PRIMARY KEY (`id_anzeige`),
+                  KEY `zu id_mangel` (`zu id_mangel`),
+                  KEY `zu id_verursacher` (`zu id_verursacher`),
+                  CONSTRAINT `anzeigen_ibfk_1` FOREIGN KEY (`zu id_mangel`) REFERENCES `mangelliste` (`id_mangel`),
+                  CONSTRAINT `anzeigen_ibfk_2` FOREIGN KEY (`zu id_verursacher`) REFERENCES `verursacher` (`id_verursacher`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            </pma:table>
+            <pma:table name="beseitigungen">
+                CREATE TABLE `beseitigungen` (
+                  `id_beseitigung` int(11) NOT NULL AUTO_INCREMENT,
+                  `Datum` date NOT NULL,
+                  `zu id_anzeige` int(11) NOT NULL,
+                  `beseitigt` tinyint(1) NOT NULL,
+                  `Erledigungsvermerk` varchar(2000) NOT NULL,
+                  PRIMARY KEY (`id_beseitigung`),
+                  KEY `zu id_anzeige` (`zu id_anzeige`),
+                  CONSTRAINT `beseitigungen_ibfk_1` FOREIGN KEY (`zu id_anzeige`) REFERENCES `anzeigen` (`id_anzeige`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            </pma:table>
+            <pma:table name="gewerke">
+                CREATE TABLE `gewerke` (
+                  `id_gewerk` int(11) NOT NULL AUTO_INCREMENT,
+                  `Gewerkename` varchar(255) NOT NULL,
+                  PRIMARY KEY (`id_gewerk`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            </pma:table>
+            <pma:table name="gruppierung">
+                CREATE TABLE `gruppierung` (
+                  `id_gruppe` int(11) NOT NULL AUTO_INCREMENT,
+                  `Gruppenname` varchar(255) NOT NULL COMMENT 'eigene Gruppierung, z.B. Bauteile',
+                  PRIMARY KEY (`id_gruppe`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            </pma:table>
+            <pma:table name="kommentare">
+                CREATE TABLE `kommentare` (
+                  `id_kommentar` int(11) NOT NULL AUTO_INCREMENT,
+                  `Datum` date NOT NULL,
+                  `Kommentar` varchar(255) NOT NULL,
+                  `zu id_verfasser` int(11) NOT NULL,
+                  `zu id_mangel` int(11) NOT NULL,
+                  PRIMARY KEY (`id_kommentar`),
+                  KEY `zu id_mangel` (`zu id_mangel`),
+                  KEY `zu id_verfasser` (`zu id_verfasser`),
+                  CONSTRAINT `kommentare_ibfk_1` FOREIGN KEY (`zu id_mangel`) REFERENCES `mangelliste` (`id_mangel`),
+                  CONSTRAINT `kommentare_ibfk_2` FOREIGN KEY (`zu id_verfasser`) REFERENCES `verfasser` (`id_verfasser`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            </pma:table>
+            <pma:table name="mangelliste">
+                CREATE TABLE `mangelliste` (
+                  `id_mangel` int(11) NOT NULL AUTO_INCREMENT,
+                  `Datum` date NOT NULL,
+                  `Lage` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+                  `Mangelbeschreibung` varchar(2000) COLLATE utf8_unicode_ci NOT NULL,
+                  `Status` varchar(25) COLLATE utf8_unicode_ci NOT NULL COMMENT 'feste Werte (vor-, bei-, nach Abnahme)',
+                  `zu_id_gruppe` int(11) NOT NULL,
+                  `zu_id_projekt_nutzer` int(11) NOT NULL,
+                  `Anhang` blob NOT NULL,
+                  PRIMARY KEY (`id_mangel`),
+                  KEY `zu_id_gruppe` (`zu_id_gruppe`),
+                  KEY `zu_id_projekt_nutzer` (`zu_id_projekt_nutzer`),
+                  CONSTRAINT `mangelliste_ibfk_1` FOREIGN KEY (`zu_id_gruppe`) REFERENCES `gruppierung` (`id_gruppe`),
+                  CONSTRAINT `mangelliste_ibfk_2` FOREIGN KEY (`zu_id_projekt_nutzer`) REFERENCES `projekt_nutzer_zuordnung` (`id_proj_zuordnung`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+            </pma:table>
+            <pma:table name="projekte">
+                CREATE TABLE `projekte` (
+                  `id_projekt` int(11) NOT NULL AUTO_INCREMENT,
+                  `Kurzbezeichnung` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+                  `Beschreibung` text COLLATE utf8_unicode_ci NOT NULL,
+                  PRIMARY KEY (`id_projekt`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Tabelle der Projekte';
+            </pma:table>
+            <pma:table name="projekt_nutzer_zuordnung">
+                CREATE TABLE `projekt_nutzer_zuordnung` (
+                  `id_proj_zuordnung` int(11) NOT NULL AUTO_INCREMENT,
+                  `id_verfasser` int(11) NOT NULL COMMENT 'ID aus Tabelle der Nutzer',
+                  `id_projekte` int(11) NOT NULL COMMENT 'ID aus  Tabelle der Projekte',
+                  PRIMARY KEY (`id_proj_zuordnung`),
+                  KEY `id_verfasser` (`id_verfasser`),
+                  KEY `projekt_zuordnung` (`id_projekte`) USING BTREE,
+                  CONSTRAINT `projekt_nutzer_zuordnung_ibfk_1` FOREIGN KEY (`id_verfasser`) REFERENCES `verfasser` (`id_verfasser`),
+                  CONSTRAINT `projekt_nutzer_zuordnung_ibfk_2` FOREIGN KEY (`id_projekte`) REFERENCES `projekte` (`id_projekt`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Tabelle der Zuordnung von Projekten und Nutzern ';
+            </pma:table>
+            <pma:table name="verfasser">
+                CREATE TABLE `verfasser` (
+                  `id_verfasser` int(11) NOT NULL AUTO_INCREMENT,
+                  `Name` varchar(255) COLLATE utf16_unicode_ci NOT NULL COMMENT 'Nach-, Vorname',
+                  `Email` varchar(255) COLLATE utf16_unicode_ci NOT NULL,
+                  `Passwort` varchar(255) COLLATE utf16_unicode_ci NOT NULL,
+                  `Rolle` tinyint(4) NOT NULL COMMENT 'Rechtevergabe',
+                  `registered` datetime NOT NULL,
+                  `last_login` datetime NOT NULL,
+                  PRIMARY KEY (`id_verfasser`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf16 COLLATE=utf16_unicode_ci COMMENT='Tabelle der Nutzer';
+            </pma:table>
+            <pma:table name="verursacher">
+                CREATE TABLE `verursacher` (
+                  `id_verursacher` int(11) NOT NULL AUTO_INCREMENT,
+                  `Name AN` varchar(255) NOT NULL,
+                  `Email AN` varchar(255) NOT NULL,
+                  `zu id_gewerk` int(11) NOT NULL,
+                  `Anmerkung` varchar(2000) NOT NULL,
+                  PRIMARY KEY (`id_verursacher`),
+                  KEY `zu id_gewerk` (`zu id_gewerk`),
+                  CONSTRAINT `verursacher_ibfk_1` FOREIGN KEY (`zu id_gewerk`) REFERENCES `gewerke` (`id_gewerk`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            </pma:table>
+        </pma:database>
+    </pma:structure_schemas>
+
+    <!--
+    - Datenbank: 'DB_LackTracking'
+    -->
+    <database name="DB_LackTracking">
+        <!-- Tabelle anzeigen -->
+        <!-- Tabelle beseitigungen -->
+        <!-- Tabelle gewerke -->
+        <!-- Tabelle gruppierung -->
+        <!-- Tabelle kommentare -->
+        <!-- Tabelle mangelliste -->
+        <!-- Tabelle projekte -->
+        <!-- Tabelle projekt_nutzer_zuordnung -->
+        <!-- Tabelle verfasser -->
+        <!-- Tabelle verursacher -->
+    </database>
+</pma_xml_export>
