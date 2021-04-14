@@ -12,7 +12,10 @@ session_start();
 <?php
 // In der If-Abfrage wird abgefragt, ob die beim Login
 // gestartete Session aktiv ist
-if (isset($_SESSION['session_user'])) {
+
+var_dump($_SESSION);
+echo '<br>';
+if (isset($_SESSION['session_id'])) {
     echo "<h2>Du bist angemeldet</h2>";
 } else {
 // Ist keine Session aktiv, kommt diese Anzeige:

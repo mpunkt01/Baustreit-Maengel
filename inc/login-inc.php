@@ -2,8 +2,6 @@
 // Sitzung starten, damit der Benutzer eingeloggt bleibt
 session_start();
 
-// echo $_POST['email'], $_POST['password'];
-
 if (isset($_POST['submit'])) {
 
     include 'db.php';
@@ -14,19 +12,7 @@ if (isset($_POST['submit'])) {
     // Error handlers
     // Existiert der Benutzername?
     $sql = "SELECT * FROM verfasser WHERE email = '$email'";
-    $result = mysqli_query($connection, $sql);
-    
-  
-    echo '<table border="1">';
-while ($zeile = mysqli_fetch_array( $result, MYSQLI_ASSOC))
-{
-  echo "<tr>";
-  echo "<td>". $zeile['Name'] . "</td>";
-  echo "<td>". $zeile['Email'] . "</td>";
-  echo "<td>". $zeile['Passwort'] . "</td>";
-  echo "</tr>";
-}
-echo "</table>"; 
+    $result = mysqli_query($connection, $sql,MYSQLI_STORE_RESULT);
 
     // mysqli_num_rows gibt die Anzahl an, wie oft die Bedingung von $sql erfüllt wird
     $resultCheck = mysqli_num_rows($result);
@@ -39,14 +25,9 @@ echo "</table>";
     } else {
         echo "Ist das Passwort korrekt?\n";
         // Die Variable row wird als Array mit den Informationen aus der Datenbank befüllt
-        while ($row = $result->fetch_assoc()) {
-            printf("%s (%s)\n", $row["Name"], $row["Passwort"]);
-        }
 
         if ($row = mysqli_fetch_assoc($result)) {
-            echo $row['Email'];
-            echo $row['id_verfasser'];
-            echo $row['Passwort'];
+          
             // De-Hashing des Passwortes 
             // password_verify($password, $row['password']) gibt true oder false zurück
             $hashedPassword = password_verify($password, $row['Passwort']);
@@ -58,11 +39,12 @@ echo "</table>";
                 exit();
               // elseif fängt unvorhergesehene Fehler ab
             } elseif($hashedPassword == true){
-              // Benutzer anmelden
-              $_SESSION['session_id'] = $row['id-verfasser'];
-              /*$_SESSION['session_user'] = $row['user'];
-              $_SESSION['session_name'] = $row['name'];
-              $_SESSION['session_rolle'] = $row['rolle']; */
+              echo "kennwort erfolgreich";
+                // Benutzer anmelden
+              $_SESSION['session_id'] = $row['id_verfasser'];
+              $_SESSION['email'] = $row['Email'];
+              $_SESSION['password'] = $row['Passwort'];
+              $_SESSION['session_rolle'] = $row['Rolle'];
               header("Location: ../dashboard.php");
               exit();
             }

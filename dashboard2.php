@@ -12,7 +12,10 @@ session_start();
 
 <?php
 
-if (isset($_SESSION['session_user'])) {
+var_dump($_SESSION);
+echo '<br>';
+
+if (isset($_SESSION['session_id'])) {
     echo "<h2>Du bist immer noch angemeldet</h2>";
 } else {
     echo "<h2>Du bist nicht angemeldet</h2>";
