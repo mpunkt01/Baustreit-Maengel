@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Erstellungszeit: 12. Apr 2021 um 16:04
+-- Erstellungszeit: 22. Apr 2021 um 07:39
 -- Server-Version: 5.7.32
 -- PHP-Version: 7.4.12
 
@@ -13,6 +13,29 @@ SET time_zone = "+00:00";
 --
 -- Datenbank: `DB_LackTracking`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `aenderungen`
+--
+
+CREATE TABLE `aenderungen` (
+  `id_aenderung` int(11) NOT NULL,
+  `Datum` date NOT NULL,
+  `Kurztitel` varchar(255) NOT NULL,
+  `Beschreibung` text NOT NULL,
+  `Kostenauswirkung` decimal(19,4) NOT NULL COMMENT 'pauschal Euro in netto',
+  `Terminauswirkung` varchar(255) NOT NULL COMMENT 'Beschreibung der Terminauswirkung in Prosa',
+  `Freigabe` tinyint(1) NOT NULL,
+  `externe Nummer` varchar(50) NOT NULL,
+  `Verursacher` varchar(255) NOT NULL,
+  `Risiko` text NOT NULL,
+  `Empfehlung` text NOT NULL,
+  `Finanzierung` text NOT NULL,
+  `Anlagen` varchar(255) NOT NULL,
+  `Projekt Verfasser Zuordnung` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -32,6 +55,31 @@ CREATE TABLE `anzeigen` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `aufgaben`
+--
+
+CREATE TABLE `aufgaben` (
+  `id_aufgabe` int(11) NOT NULL,
+  `Datum` date NOT NULL,
+  `bis` date NOT NULL,
+  `Aufgabe` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `Erledigungsvermerk` text COLLATE utf8_unicode_ci NOT NULL,
+  `von` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Wer soll erledigen?',
+  `erledigt` tinyint(1) NOT NULL COMMENT 'ist die Aufgabe erledigt?',
+  `zu Projekt Verfasser` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='eigene Aufgabenverwaltung';
+
+--
+-- Daten für Tabelle `aufgaben`
+--
+
+INSERT INTO `aufgaben` (`id_aufgabe`, `Datum`, `bis`, `Aufgabe`, `Erledigungsvermerk`, `von`, `erledigt`, `zu Projekt Verfasser`) VALUES
+(1, '2021-04-21', '2021-04-28', 'Daten in Datenbank schreiben', '21.4.21: bisher wurde nichts erledigt', 'Jupp', 0, 1),
+(2, '2021-04-21', '2021-04-28', 'Daten löschen', '20.4.21: keine Reaktion', 'Jupp', 0, 1);
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `beseitigungen`
 --
 
@@ -40,29 +88,41 @@ CREATE TABLE `beseitigungen` (
   `Datum` date NOT NULL,
   `zu id_anzeige` int(11) NOT NULL,
   `beseitigt` tinyint(1) NOT NULL,
-  `Erledigungsvermerk` varchar(2000) NOT NULL
+  `Erledigungsvermerk` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `gewerke`
+-- Tabellenstruktur für Tabelle `chronik`
 --
 
-CREATE TABLE `gewerke` (
-  `id_gewerk` int(11) NOT NULL,
-  `Gewerkename` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `chronik` (
+  `id_chronik` int(11) NOT NULL,
+  `Datum` date NOT NULL,
+  `Vorgang` varchar(255) NOT NULL,
+  `Beschreibung` text NOT NULL,
+  `zu Projekt Verfasser` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Projekthistorie';
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `gruppierung`
+-- Tabellenstruktur für Tabelle `dokumente`
 --
 
-CREATE TABLE `gruppierung` (
-  `id_gruppe` int(11) NOT NULL,
-  `Gruppenname` varchar(255) NOT NULL COMMENT 'eigene Gruppierung, z.B. Bauteile'
+CREATE TABLE `dokumente` (
+  `id_doku` int(11) NOT NULL,
+  `vom` date NOT NULL,
+  `von` varchar(255) NOT NULL,
+  `an` varchar(255) NOT NULL,
+  `Betreff` varchar(255) NOT NULL,
+  `Anmerkung` text NOT NULL,
+  `Kategorie` varchar(80) NOT NULL COMMENT 'z.B. Schriftverkehr, Aktenvermerk, Genehmigung',
+  `Schlagworte` varchar(255) NOT NULL,
+  `Lebensdauer` tinyint(4) NOT NULL COMMENT 'von 1 - 99 Jahre',
+  `Anlage` blob NOT NULL,
+  `Projekt Verfasser Zuordnung` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -74,7 +134,7 @@ CREATE TABLE `gruppierung` (
 CREATE TABLE `kommentare` (
   `id_kommentar` int(11) NOT NULL,
   `Datum` date NOT NULL,
-  `Kommentar` varchar(255) NOT NULL,
+  `Kommentar` text NOT NULL,
   `zu id_verfasser` int(11) NOT NULL,
   `zu id_mangel` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -89,11 +149,11 @@ CREATE TABLE `mangelliste` (
   `id_mangel` int(11) NOT NULL,
   `Datum` date NOT NULL,
   `Lage` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `Mangelbeschreibung` varchar(2000) COLLATE utf8_unicode_ci NOT NULL,
+  `Mangelbeschreibung` text COLLATE utf8_unicode_ci NOT NULL,
   `Status` varchar(25) COLLATE utf8_unicode_ci NOT NULL COMMENT 'feste Werte (vor-, bei-, nach Abnahme)',
-  `zu_id_gruppe` int(11) NOT NULL,
+  `Gruppierung` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'eigene Gruppe, wie Bauteile oder FQ',
   `zu_id_projekt_nutzer` int(11) NOT NULL,
-  `Anhang` blob NOT NULL
+  `Anhang` int(11) NOT NULL COMMENT 'Verweis auf id_dokument'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -113,7 +173,8 @@ CREATE TABLE `projekte` (
 --
 
 INSERT INTO `projekte` (`id_projekt`, `Kurzbezeichnung`, `Beschreibung`) VALUES
-(1, 'Testprojekt', 'Das Testprojekt dient zum ausprobieren. ');
+(1, 'Testprojekt', 'Das Testprojekt dient zum ausprobieren. '),
+(2, '2. Projekt', 'zu Testzwecken wurde ein zweites Projekt zur Datenbank eingefügt');
 
 -- --------------------------------------------------------
 
@@ -132,7 +193,9 @@ CREATE TABLE `projekt_nutzer_zuordnung` (
 --
 
 INSERT INTO `projekt_nutzer_zuordnung` (`id_proj_zuordnung`, `id_verfasser`, `id_projekte`) VALUES
-(1, 1, 1);
+(1, 36, 1),
+(2, 33, 2),
+(3, 36, 2);
 
 -- --------------------------------------------------------
 
@@ -142,22 +205,20 @@ INSERT INTO `projekt_nutzer_zuordnung` (`id_proj_zuordnung`, `id_verfasser`, `id
 
 CREATE TABLE `verfasser` (
   `id_verfasser` int(11) NOT NULL,
-  `Name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT 'Nach-, Vorname',
-  `Email` varchar(255) COLLATE utf16_unicode_ci NOT NULL,
+  `Name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT 'Vor- Nachname',
+  `Email` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `Passwort` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `Rolle` tinyint(4) NOT NULL COMMENT 'Rechtevergabe',
-  `registered` datetime DEFAULT NULL,
-  `last_login` datetime DEFAULT NULL
+  `registered` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf16 COLLATE=utf16_unicode_ci COMMENT='Tabelle der Nutzer';
 
 --
 -- Daten für Tabelle `verfasser`
 --
 
-INSERT INTO `verfasser` (`id_verfasser`, `Name`, `Email`, `Passwort`, `Rolle`, `registered`, `last_login`) VALUES
-(1, '\0W\0e\0i\0t\0z\0,\0 \0M\0i\0c\0h\0a\0e\0l', 'weitz@baustreit.de', '\0t\0e\0s\0t', 1, NULL, NULL),
-(33, 'tom', 'tom@email.de', '$2y$10$GwU1oI4prb58K1atFiiSGexiMrwwRiS1N51BttYI5yWwvpa6a/eem', 2, '2021-04-12 11:40:04', NULL),
-(34, 'test', 'test@email.de', '$2y$10$wMs.vCuxormAN6eKVzjTnuia0uGxMqmkOshiBbfSsoqB5RDSI2FPy', 2, '2021-04-12 11:49:28', NULL);
+INSERT INTO `verfasser` (`id_verfasser`, `Name`, `Email`, `Passwort`, `Rolle`, `registered`) VALUES
+(33, 'Tom Morello', '\0t\0o\0m\0@\0e\0m\0a\0i\0l\0.\0d\0e', '$2y$10$GwU1oI4prb58K1atFiiSGexiMrwwRiS1N51BttYI5yWwvpa6a/eem', 2, '2021-04-12 11:40:04'),
+(36, 'Michael Weitz', 'weitz@baustreit.de', '$2y$10$KONBIbq.HHT9GdtVsA3z4uOEPBwip92PDDqO.sCsloXQ6FVwuUzMq', 2, '2021-04-14 16:18:17');
 
 -- --------------------------------------------------------
 
@@ -167,15 +228,22 @@ INSERT INTO `verfasser` (`id_verfasser`, `Name`, `Email`, `Passwort`, `Rolle`, `
 
 CREATE TABLE `verursacher` (
   `id_verursacher` int(11) NOT NULL,
-  `Name AN` varchar(255) NOT NULL,
-  `Email AN` varchar(255) NOT NULL,
-  `zu id_gewerk` int(11) NOT NULL,
-  `Anmerkung` varchar(2000) NOT NULL
+  `Name AN` varchar(80) NOT NULL,
+  `Email AN` varchar(80) NOT NULL,
+  `Gewerkeart` varchar(50) NOT NULL,
+  `Anmerkung` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Indizes der exportierten Tabellen
 --
+
+--
+-- Indizes für die Tabelle `aenderungen`
+--
+ALTER TABLE `aenderungen`
+  ADD PRIMARY KEY (`id_aenderung`),
+  ADD KEY `zu Projekt Verfasser` (`Projekt Verfasser Zuordnung`);
 
 --
 -- Indizes für die Tabelle `anzeigen`
@@ -186,6 +254,13 @@ ALTER TABLE `anzeigen`
   ADD KEY `zu id_verursacher` (`zu id_verursacher`);
 
 --
+-- Indizes für die Tabelle `aufgaben`
+--
+ALTER TABLE `aufgaben`
+  ADD PRIMARY KEY (`id_aufgabe`),
+  ADD KEY `Projekt Verfasser Zuordnung` (`zu Projekt Verfasser`);
+
+--
 -- Indizes für die Tabelle `beseitigungen`
 --
 ALTER TABLE `beseitigungen`
@@ -193,16 +268,18 @@ ALTER TABLE `beseitigungen`
   ADD KEY `zu id_anzeige` (`zu id_anzeige`);
 
 --
--- Indizes für die Tabelle `gewerke`
+-- Indizes für die Tabelle `chronik`
 --
-ALTER TABLE `gewerke`
-  ADD PRIMARY KEY (`id_gewerk`);
+ALTER TABLE `chronik`
+  ADD PRIMARY KEY (`id_chronik`),
+  ADD KEY `Zuordnung Projekt Verfasser` (`zu Projekt Verfasser`) USING BTREE;
 
 --
--- Indizes für die Tabelle `gruppierung`
+-- Indizes für die Tabelle `dokumente`
 --
-ALTER TABLE `gruppierung`
-  ADD PRIMARY KEY (`id_gruppe`);
+ALTER TABLE `dokumente`
+  ADD PRIMARY KEY (`id_doku`),
+  ADD KEY `Projekt Verfasser zu` (`Projekt Verfasser Zuordnung`);
 
 --
 -- Indizes für die Tabelle `kommentare`
@@ -217,8 +294,8 @@ ALTER TABLE `kommentare`
 --
 ALTER TABLE `mangelliste`
   ADD PRIMARY KEY (`id_mangel`),
-  ADD KEY `zu_id_gruppe` (`zu_id_gruppe`),
-  ADD KEY `zu_id_projekt_nutzer` (`zu_id_projekt_nutzer`);
+  ADD KEY `zu_id_projekt_nutzer` (`zu_id_projekt_nutzer`),
+  ADD KEY `Anhang` (`Anhang`);
 
 --
 -- Indizes für die Tabelle `projekte`
@@ -244,12 +321,17 @@ ALTER TABLE `verfasser`
 -- Indizes für die Tabelle `verursacher`
 --
 ALTER TABLE `verursacher`
-  ADD PRIMARY KEY (`id_verursacher`),
-  ADD KEY `zu id_gewerk` (`zu id_gewerk`);
+  ADD PRIMARY KEY (`id_verursacher`);
 
 --
 -- AUTO_INCREMENT für exportierte Tabellen
 --
+
+--
+-- AUTO_INCREMENT für Tabelle `aenderungen`
+--
+ALTER TABLE `aenderungen`
+  MODIFY `id_aenderung` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT für Tabelle `anzeigen`
@@ -258,22 +340,28 @@ ALTER TABLE `anzeigen`
   MODIFY `id_anzeige` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT für Tabelle `aufgaben`
+--
+ALTER TABLE `aufgaben`
+  MODIFY `id_aufgabe` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT für Tabelle `beseitigungen`
 --
 ALTER TABLE `beseitigungen`
   MODIFY `id_beseitigung` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT für Tabelle `gewerke`
+-- AUTO_INCREMENT für Tabelle `chronik`
 --
-ALTER TABLE `gewerke`
-  MODIFY `id_gewerk` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `chronik`
+  MODIFY `id_chronik` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT für Tabelle `gruppierung`
+-- AUTO_INCREMENT für Tabelle `dokumente`
 --
-ALTER TABLE `gruppierung`
-  MODIFY `id_gruppe` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `dokumente`
+  MODIFY `id_doku` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT für Tabelle `kommentare`
@@ -291,19 +379,19 @@ ALTER TABLE `mangelliste`
 -- AUTO_INCREMENT für Tabelle `projekte`
 --
 ALTER TABLE `projekte`
-  MODIFY `id_projekt` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_projekt` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT für Tabelle `projekt_nutzer_zuordnung`
 --
 ALTER TABLE `projekt_nutzer_zuordnung`
-  MODIFY `id_proj_zuordnung` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_proj_zuordnung` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT für Tabelle `verfasser`
 --
 ALTER TABLE `verfasser`
-  MODIFY `id_verfasser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id_verfasser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT für Tabelle `verursacher`
@@ -316,6 +404,12 @@ ALTER TABLE `verursacher`
 --
 
 --
+-- Constraints der Tabelle `aenderungen`
+--
+ALTER TABLE `aenderungen`
+  ADD CONSTRAINT `zu Projekt Verfasser` FOREIGN KEY (`Projekt Verfasser Zuordnung`) REFERENCES `projekt_nutzer_zuordnung` (`id_proj_zuordnung`);
+
+--
 -- Constraints der Tabelle `anzeigen`
 --
 ALTER TABLE `anzeigen`
@@ -323,10 +417,28 @@ ALTER TABLE `anzeigen`
   ADD CONSTRAINT `anzeigen_ibfk_2` FOREIGN KEY (`zu id_verursacher`) REFERENCES `verursacher` (`id_verursacher`);
 
 --
+-- Constraints der Tabelle `aufgaben`
+--
+ALTER TABLE `aufgaben`
+  ADD CONSTRAINT `Projekt Verfasser Zuordnung` FOREIGN KEY (`zu Projekt Verfasser`) REFERENCES `projekt_nutzer_zuordnung` (`id_proj_zuordnung`);
+
+--
 -- Constraints der Tabelle `beseitigungen`
 --
 ALTER TABLE `beseitigungen`
   ADD CONSTRAINT `beseitigungen_ibfk_1` FOREIGN KEY (`zu id_anzeige`) REFERENCES `anzeigen` (`id_anzeige`);
+
+--
+-- Constraints der Tabelle `chronik`
+--
+ALTER TABLE `chronik`
+  ADD CONSTRAINT `Zuordnung Verfasser Projekt` FOREIGN KEY (`zu Projekt Verfasser`) REFERENCES `projekt_nutzer_zuordnung` (`id_proj_zuordnung`);
+
+--
+-- Constraints der Tabelle `dokumente`
+--
+ALTER TABLE `dokumente`
+  ADD CONSTRAINT `Projekt Verfasser zu` FOREIGN KEY (`Projekt Verfasser Zuordnung`) REFERENCES `projekt_nutzer_zuordnung` (`id_proj_zuordnung`);
 
 --
 -- Constraints der Tabelle `kommentare`
@@ -339,8 +451,8 @@ ALTER TABLE `kommentare`
 -- Constraints der Tabelle `mangelliste`
 --
 ALTER TABLE `mangelliste`
-  ADD CONSTRAINT `mangelliste_ibfk_1` FOREIGN KEY (`zu_id_gruppe`) REFERENCES `gruppierung` (`id_gruppe`),
-  ADD CONSTRAINT `mangelliste_ibfk_2` FOREIGN KEY (`zu_id_projekt_nutzer`) REFERENCES `projekt_nutzer_zuordnung` (`id_proj_zuordnung`);
+  ADD CONSTRAINT `mangelliste_ibfk_2` FOREIGN KEY (`zu_id_projekt_nutzer`) REFERENCES `projekt_nutzer_zuordnung` (`id_proj_zuordnung`),
+  ADD CONSTRAINT `mangelliste_ibfk_3` FOREIGN KEY (`Anhang`) REFERENCES `dokumente` (`id_doku`);
 
 --
 -- Constraints der Tabelle `projekt_nutzer_zuordnung`
@@ -348,9 +460,3 @@ ALTER TABLE `mangelliste`
 ALTER TABLE `projekt_nutzer_zuordnung`
   ADD CONSTRAINT `projekt_nutzer_zuordnung_ibfk_1` FOREIGN KEY (`id_verfasser`) REFERENCES `verfasser` (`id_verfasser`),
   ADD CONSTRAINT `projekt_nutzer_zuordnung_ibfk_2` FOREIGN KEY (`id_projekte`) REFERENCES `projekte` (`id_projekt`);
-
---
--- Constraints der Tabelle `verursacher`
---
-ALTER TABLE `verursacher`
-  ADD CONSTRAINT `verursacher_ibfk_1` FOREIGN KEY (`zu id_gewerk`) REFERENCES `gewerke` (`id_gewerk`);
